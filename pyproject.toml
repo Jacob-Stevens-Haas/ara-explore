@@ -16,6 +16,7 @@ classifiers = [
 readme = "README.md"
 dependencies = [
     "numpy",
+    "h5py",
 ]
 
 [project.optional-dependencies]
