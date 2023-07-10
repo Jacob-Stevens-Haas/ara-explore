@@ -1,5 +1,6 @@
 import ara
 
+
 def test_open():
     dataset = ara.open(104)
     assert set(dataset.keys()) == {"t1", "t2", "v1", "v2", "x", "y"}
