@@ -1,0 +1,15 @@
+[flake8]
+exclude =
+    .git,
+    .venv,
+    env,
+    dist,
+    build,
+    site-packages,
+    bin,
+    __pycache__
+max-line-length = 88
+import-order-style = smarkets
+statistics = True
+count = True
+verbose = 1

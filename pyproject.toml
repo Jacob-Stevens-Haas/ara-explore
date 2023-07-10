@@ -44,7 +44,7 @@ force-exclude = '''
 '''
 
 [tool.codespell]
-ignore-words-list = ""
+ignore-words-list = "ara"
 
 [tool.setuptools]
 packages = ["ara"]
