@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ara-explore"
+description = "Utilities for using ARA datasets"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+readme = "README.md"
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.2.4",
+    "black",
+    "build",
+    "pytest-cov",
+    "pytest-lazy-fixture",
+    "flake8-builtins-unleashed",
+    "pre-commit",
+]
+
+[tool.black]
+line-length = 88
+force-exclude = '''
+    \.git
+    \.mypy_cache
+    \.venv
+    .vscode
+    version.py
+    build
+    dist
+    env
+'''
+
+[tool.codespell]
+ignore-words-list = ""
+
+[tool.setuptools]
+packages = ["ara"]
+
+[tool.setuptools_scm]
+write_to = "ara/version.py"
