@@ -1,3 +1,5 @@
+import builtins
+
 from pathlib import Path
 
 import numpy as np
@@ -6,6 +8,9 @@ import h5py
 
 Pathlike = str | Path
 STDataset = dict
+DATA_DIR = Path("/home/ara/data")
+st_loc = Path("01_matrix_HDF5")
+DATAFILE_PREFIX = "simVectors010"
 
 def _open(filename: Pathlike) -> STDataset:
     with h5py.File(filename) as h5file:
@@ -29,8 +34,20 @@ def open(data_num: int | str) -> STDataset:
     Returns:
         dictionary with keys to the spatiotemporal grid and vectors
     """
-    DATA_DIR = Path("/home/ara/data")
-    st_loc = Path("01_matrix_HDF5")
-    DATAFILE_PREFIX = "simVectors010"
     filename = DATAFILE_PREFIX + str(data_num) + ".h5"
     return _open(DATA_DIR / st_loc / filename)
+
+
+def _list_datasets():
+    matches = Path(DATA_DIR / st_loc).glob(DATAFILE_PREFIX + "*.h5")
+    return tuple(matches)
+
+
+def list_datasets():
+    """List available datasets in the default data directory on doppio
+
+    Returns:
+        tuple of datasets, by number, that can be passed to ara.open()
+    """
+    matches = _list_datasets()
+    return tuple(match.name[13:-3] for match in matches)
