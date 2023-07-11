@@ -13,10 +13,10 @@ DATAFILE_PREFIX = "simVectors010"
 def _open(filename: Pathlike) -> STDataset:
     with h5py.File(filename) as h5file:
         return {
-            "t1": h5file["t1"],
-            "t2": h5file["t2"],
-            "x": h5file["x"],
-            "y": h5file["y"],
+            "t1": np.array(h5file["t1"]),
+            "t2": np.array(h5file["t2"]),
+            "x": np.array(h5file["x"]),
+            "y": np.array(h5file["y"]),
             "v1": np.stack((h5file["Vx1"], h5file["Vy1"], h5file["Vz1"]), axis=-1),
             "v2": np.stack((h5file["Vx2"], h5file["Vy2"], h5file["Vz2"]), axis=-1),
         }
