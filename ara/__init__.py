@@ -49,3 +49,26 @@ def list_datasets():
     """
     matches = _list_datasets()
     return tuple(match.name[13:-3] for match in matches)
+
+
+def time_misalignment(t1: np.ndarray, t2: np.ndarray) -> float:
+    """Calculate how misaligned the times of v1 and v2 are.
+
+    Args:
+        t1, t2: the times of v1 and v2 observations
+
+    Returns:
+        Maximum value of time delta between equivaluent t1 and t2
+        indices, divided by the t1 or t2 gap on either side of the index
+    """
+    dts1 = t1[1:] - t1[:-1]
+    dts2 = t2[1:] - t2[:-1]
+    terr_rel = np.stack(
+        (
+            (t2 - t1)[1:] / dts1,
+            (t2 - t1)[:-1] / dts1,
+            (t2 - t1)[1:] / dts2,
+            (t2 - t1)[:-1] / dts2,
+        )
+    )
+    return np.max(np.abs(terr_rel))
