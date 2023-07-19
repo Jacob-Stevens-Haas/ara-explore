@@ -51,3 +51,6 @@ packages = ["ara"]
 
 [tool.setuptools_scm]
 write_to = "ara/version.py"
+
+[project.entry-points.'ara.dim_reduction']
+svd_time = "ara:svd_time"
