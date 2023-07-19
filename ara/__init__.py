@@ -3,6 +3,7 @@ import warnings
 from pathlib import Path
 from typing import Any
 from typing import Sequence
+from typing import Union
 
 import h5py
 import numpy as np
@@ -16,7 +17,7 @@ else:
 
 reduction_methods = entry_points(group="ara.dim_reduction")
 
-Pathlike = str | Path
+Pathlike = Union[str, Path]
 STDataset = dict
 DATA_DIR = Path("/home/ara/data")
 st_loc = Path("01_matrix_HDF5")
@@ -43,7 +44,7 @@ def _open(filename: Pathlike) -> STDataset:
         }
 
 
-def open(data_num: int | str) -> STDataset:
+def open(data_num: Union[int, str]) -> STDataset:
     """Open a dataset in the default data directory on doppio
 
     Args:
@@ -105,7 +106,7 @@ svd_time.names = ("u", "s", "v")
 
 
 def save_dim_reduction(
-    data_num: int | str,
+    data_num: Union[int, str],
     reduction_type: str,
     suffix: str = "",
     names: Sequence[str] = None,
