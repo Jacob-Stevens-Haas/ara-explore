@@ -1,8 +1,6 @@
 import sys
-import warnings
 from pathlib import Path
 from typing import Any
-from typing import Sequence
 from typing import Union
 
 import h5py
@@ -109,44 +107,37 @@ def save_dim_reduction(
     data_num: Union[int, str],
     reduction_type: str,
     suffix: str = "",
-    names: Sequence[str] = None,
     **kwargs,
 ) -> Any:
     """Create and cache a dimensionality reduction, applied to the data.
 
     Args:
-        data_num: number that identifies the original data (e.g. the last
-            three digits of the spatiotemporal h5 files
+        data_num: number that identifies the original data (e.g. the
+            last three digits of the spatiotemporal h5 files
         reduction_type: the name of a reduction method registered to the
             ara.dim_reduction entry point.
-        suffix: a custom suffix to append to the reducer name in creating
-            the file name
-        names: the names for the output arrays from the reduction method,
-             e.g. ["u", "s", "v"] for singular value decomposition.
-        **kwargs: arguments passed to reduction method, including the data
+        suffix: a custom suffix to append to the reducer name in
+            creating the file name
+        kwargs: arguments passed to reduction method, including the data
 
     Returns:
         The output of the reduction method.
     """
     try:
-        reducer = reduction_methods[reduction_type]
+        reducer = reduction_methods[reduction_type].load()
+        names = reducer.names
     except KeyError:
         raise ValueError(
             f"No reduction method named {reduction_type} is installed."
             "Reduction methods need to be installed as an entry point to"
             "the 'ara.dim_reduction' group"
         )
+    except AttributeError:
+        raise AttributeError(f"Entry point {reduction_type} has no attribute 'names'")
     out = reducer(**kwargs)
     filename = f"{reducer.__name__}{suffix}{NUMERICAL_PREFIX}{data_num}"
-    try:
-        save_kwargs = {name: arr for name, arr in zip(names, out, strict=True)}
-        save_args = ()
-    except ValueError:
-        warnings.warn(
-            "Names has different number of elements than output of reduction method."
-            "Assigning generic names."
-        )
-        save_args = out
-        save_kwargs = {}
-    np.savez_compressed(DATA_DIR / st_loc / filename, *save_args, **save_kwargs)
+    if (DATA_DIR / st_loc / filename).exists():
+        return np.load(filename)
+    save_kwargs = {name: arr for name, arr in zip(names, out, strict=True)}
+    np.savez_compressed(DATA_DIR / st_loc / filename, **save_kwargs)
     return out
