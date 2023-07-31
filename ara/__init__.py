@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from typing import Any
+from typing import Tuple
 from typing import Union
 
 import h5py
@@ -17,7 +18,7 @@ reduction_methods = entry_points(group="ara.dim_reduction")
 
 Pathlike = Union[str, Path]
 STDataset = dict
-DATA_DIR = Path("/home/ara/data")
+DATA_DIR = Path("/home/ara/data").absolute()
 st_loc = Path("01_matrix_HDF5")
 NUMERICAL_PREFIX = "010"
 DATAFILE_PREFIX = "simVectors" + NUMERICAL_PREFIX
@@ -108,7 +109,7 @@ def save_dim_reduction(
     reduction_type: str,
     suffix: str = "",
     **kwargs,
-) -> Any:
+) -> Tuple[Any, Path]:
     """Create and cache a dimensionality reduction, applied to the data.
 
     Args:
@@ -121,7 +122,7 @@ def save_dim_reduction(
         kwargs: arguments passed to reduction method, including the data
 
     Returns:
-        The output of the reduction method.
+        The output of the reduction method and the path to the file.
     """
     try:
         reducer = reduction_methods[reduction_type].load()
@@ -134,10 +135,11 @@ def save_dim_reduction(
         )
     except AttributeError:
         raise AttributeError(f"Entry point {reduction_type} has no attribute 'names'")
+    filename = f"{reducer.__name__}{suffix}{NUMERICAL_PREFIX}{data_num}.npz"
+    filename = DATA_DIR / st_loc / filename
+    if filename.exists():
+        return np.load(filename), filename
     out = reducer(**kwargs)
-    filename = f"{reducer.__name__}{suffix}{NUMERICAL_PREFIX}{data_num}"
-    if (DATA_DIR / st_loc / filename).exists():
-        return np.load(filename)
     save_kwargs = {name: arr for name, arr in zip(names, out, strict=True)}
-    np.savez_compressed(DATA_DIR / st_loc / filename, **save_kwargs)
-    return out
+    np.savez_compressed(filename, **save_kwargs)
+    return out, filename
