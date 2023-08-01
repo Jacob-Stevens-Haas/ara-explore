@@ -98,10 +98,11 @@ def time_misalignment(t1: np.ndarray, t2: np.ndarray) -> float:
 def svd_time(arr: AxesArray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculate the SVD of arr, flattening all axes but time"""
     flattened = np.reshape(arr, (-1, arr.n_time))
-    return np.linalg.svd(flattened)
+    svd = np.linalg.svd(flattened, full_matrices=False)
+    return {"U": svd.U, "S": svd.S, "Vh": svd.Vh}
 
 
-svd_time.names = ("u", "s", "v")
+svd_time.names = ("U", "S", "Vh")
 
 
 def save_dim_reduction(
@@ -138,7 +139,10 @@ def save_dim_reduction(
     filename = f"{reducer.__name__}{suffix}{NUMERICAL_PREFIX}{data_num}.npz"
     filename = DATA_DIR / st_loc / filename
     if filename.exists():
-        return np.load(filename), filename
+        compressed = np.load(filename, allow_pickle=False)
+        out = dict(compressed)
+        compressed.close()
+        return out, filename
     out = reducer(**kwargs)
     save_kwargs = {name: arr for name, arr in zip(names, out, strict=True)}
     np.savez_compressed(filename, **save_kwargs)

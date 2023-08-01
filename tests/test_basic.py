@@ -41,19 +41,36 @@ def fake_dataset():
 
 @pytest.fixture
 def saved_dim_red_data(fake_dataset):
-    v = np.concatenate((fake_dataset["v1"], fake_dataset["v2"]), axis=-1)
-    _, filename = ara.save_dim_reduction(104, "svd_time", "_test", arr=v)
-    yield filename
+    arr = fake_dataset["v1"]
+    data, filename = ara.save_dim_reduction(104, "svd_time", "_test", arr=arr)
+    yield data, filename
     filename.unlink()
 
 
-def test_dim_reduction_plugin(saved_dim_red_data):
-    pass
+def test_dim_reduction_plugin_loadtype(saved_dim_red_data, fake_dataset):
+    result, _ = saved_dim_red_data
+    expected = ara.svd_time(fake_dataset["v1"])
+    assert all(
+        type(ke) == type(kr) and type(ve) == type(vr)
+        for (ke, ve), (kr, vr) in zip(expected.items(), result.items())
+    )
+
+
+def test_dim_reduction_plugin(saved_dim_red_data, fake_dataset):
+    data, filename = saved_dim_red_data
+    U = data["U"]
+    Vh = data["Vh"]
+    S = data["S"]
+    result = (U * S) @ Vh
+    svd = ara.svd_time(fake_dataset["v1"])
+    expected = (svd["U"] * svd["S"]) @ svd["Vh"]
+    np.testing.assert_almost_equal(result, expected)
 
 
 def test_dim_reduction_cache(saved_dim_red_data, fake_dataset):
-    v = np.concatenate((fake_dataset["v1"], fake_dataset["v2"]), axis=-1)
-    expected = saved_dim_red_data.stat().st_mtime_ns
-    _, filename2 = ara.save_dim_reduction(104, "svd_time", "_test", arr=v)
+    arr = fake_dataset["v1"]
+    _, filename = saved_dim_red_data
+    expected = filename.stat().st_mtime_ns
+    _, filename2 = ara.save_dim_reduction(104, "svd_time", "_test", arr=arr)
     result = filename2.stat().st_mtime_ns
     assert result == expected

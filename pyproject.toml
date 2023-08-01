@@ -17,6 +17,7 @@ readme = "README.md"
 dependencies = [
     "numpy",
     "h5py",
+    "pysindy>=1.7.5"
 ]
 
 [project.optional-dependencies]
