@@ -74,3 +74,14 @@ def test_dim_reduction_cache(saved_dim_red_data, fake_dataset):
     _, filename2 = ara.save_dim_reduction(104, "svd_time", "_test", arr=arr)
     result = filename2.stat().st_mtime_ns
     assert result == expected
+
+
+def test_svd_time():
+    rt2 = np.sqrt(2) / 2
+    v1 = np.array([[rt2], [-rt2]])
+    u1 = np.array([[0.6, 0.8]])
+    arr = AxesArray(v1 @ u1, {"ax_time": 0})
+    svd = ara.svd_time(arr)
+    result = svd["Vh"][0].flatten()
+    expected = v1.flatten()
+    assert np.allclose(result, expected) or np.allclose(-result, expected)

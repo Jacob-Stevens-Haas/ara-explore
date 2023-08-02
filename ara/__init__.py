@@ -97,7 +97,8 @@ def time_misalignment(t1: np.ndarray, t2: np.ndarray) -> float:
 
 def svd_time(arr: AxesArray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Calculate the SVD of arr, flattening all axes but time"""
-    flattened = np.reshape(arr, (-1, arr.n_time))
+    time_last = np.moveaxis(arr, arr.ax_time, -1)
+    flattened = np.reshape(time_last, (-1, arr.n_time))
     svd = np.linalg.svd(flattened, full_matrices=False)
     return {"U": svd.U, "S": svd.S, "Vh": svd.Vh}
 
