@@ -5,3 +5,4 @@ __pycache__/
 todo
 commit-msg
 **/version.py
+build

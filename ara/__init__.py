@@ -103,9 +103,6 @@ def svd_time(arr: AxesArray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return {"U": svd.U, "S": svd.S, "Vh": svd.Vh}
 
 
-svd_time.names = ("U", "S", "Vh")
-
-
 def save_dim_reduction(
     data_num: Union[int, str],
     reduction_type: str,
@@ -128,7 +125,6 @@ def save_dim_reduction(
     """
     try:
         reducer = reduction_methods[reduction_type].load()
-        names = reducer.names
     except KeyError:
         raise ValueError(
             f"No reduction method named {reduction_type} is installed."
@@ -140,11 +136,9 @@ def save_dim_reduction(
     filename = f"{reducer.__name__}{suffix}{NUMERICAL_PREFIX}{data_num}.npz"
     filename = DATA_DIR / st_loc / filename
     if filename.exists():
-        compressed = np.load(filename, allow_pickle=False)
-        out = dict(compressed)
-        compressed.close()
+        with np.load(filename, allow_pickle=False) as compressed:
+            out = dict(compressed)
         return out, filename
     out = reducer(**kwargs)
-    save_kwargs = {name: arr for name, arr in zip(names, out, strict=True)}
-    np.savez_compressed(filename, **save_kwargs)
+    np.savez_compressed(filename, **out)
     return out, filename
