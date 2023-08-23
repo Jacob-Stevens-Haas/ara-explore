@@ -5,9 +5,10 @@ from typing import Tuple
 from typing import Union
 
 import h5py
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import animation
 from pysindy import AxesArray
-
 
 if sys.version_info < (3, 10):
     from importlib_metadata import entry_points
@@ -142,3 +143,62 @@ def save_dim_reduction(
     out = reducer(**kwargs)
     np.savez_compressed(filename, **out)
     return out, filename
+
+
+def arr_to_movie(arr, x, y, filename, framestep=10, **kwargs):
+    """Create an animation of a simulation for v1 and v2
+
+    Only animates the in-plane components (x and y) and not the
+    orthogonal (z) components.
+
+    Args:
+        arr: Data array (nx * ny * 6, nt)
+        x: x position of data
+        y: y position of data
+        filename: saved in current working directory
+        framestep: number of timesteps in between each frame (default 10)
+        kwargs: passed to matplotlib.Axes.quiver
+    """
+    nt = arr.shape[-1]
+    nx = len(x)
+    ny = len(y)
+    vecs = np.reshape(arr, (nx, ny, 6, nt))
+    vecs = np.moveaxis(vecs, -2, -1)
+    Vx1 = vecs[..., 0]
+    Vy1 = vecs[..., 1]
+    Vx2 = vecs[..., 3]
+    Vy2 = vecs[..., 4]
+
+    # Create Animation Plot/File
+    fig, axes = plt.subplots(
+        nrows=1, ncols=2, figsize=(12, 6), sharex=True, sharey=True
+    )
+    plt.suptitle("Vectors, $it$ = " + str(0), fontsize=14)
+    ax1 = axes[0]
+    ax2 = axes[1]
+    scale1 = 10 * np.max(np.abs(vecs[..., 0:2]))
+    scale2 = 10 * np.max(np.abs(vecs[..., 3:5]))
+
+    # To animate the quiver, we can change the u and v values, in animate() method.
+    def animate(it):
+        print(f"Making frame {it}", end="\r", flush=True)
+        u1, v1 = Vx1[:, :, it], Vy1[:, :, it]
+        u2, v2 = Vx2[:, :, it], Vy2[:, :, it]
+        ax1.clear()
+        ax2.clear()
+        ln1 = ax1.quiver(x, y, u1, v1, color="b", scale=scale1, alpha=1, **kwargs)
+        ln2 = ax2.quiver(x, y, u2, v2, color="g", scale=scale2, alpha=1, **kwargs)
+        ax1.set_title("V1, $t$ = " + str(it))
+        ax2.set_title("V2, $t$ = " + str(it))
+        plt.suptitle("Vectors, $it$ = " + str(it), fontsize=14)
+        return [ln1, ln2]
+
+    # Create an animation object
+    ani = animation.FuncAnimation(
+        fig, animate, interval=framestep, frames=range(0, nt, framestep), repeat=False
+    )
+
+    # write animation as mp4
+    writer = animation.FFMpegWriter(fps=30)
+    ani.save(f"{filename}.mp4", writer=writer)
+    return ani

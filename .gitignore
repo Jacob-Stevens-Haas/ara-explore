@@ -6,3 +6,5 @@ todo
 commit-msg
 **/version.py
 build
+ARA_vis.ipynb
+debugme*.py
