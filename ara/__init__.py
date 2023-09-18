@@ -145,14 +145,21 @@ def save_dim_reduction(
     return out, filename
 
 
-def arr_to_movie(arr, x, y, filename, framestep=10, **kwargs):
+def arr_to_movie(
+    arr: np.ndarray,
+    x: np.ndarray,
+    y: np.ndarray,
+    filename: str,
+    framestep: int = 10,
+    **kwargs,
+):
     """Create an animation of a simulation for v1 and v2
 
     Only animates the in-plane components (x and y) and not the
     orthogonal (z) components.
 
     Args:
-        arr: Data array (nx * ny * 6, nt)
+        arr: Data array, shape is (nx * ny * 6, nt)
         x: x position of data
         y: y position of data
         filename: saved in current working directory
